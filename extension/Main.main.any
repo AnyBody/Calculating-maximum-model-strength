@@ -1,0 +1,22 @@
+// Model to simulate flexion and a force negative in the vertical direction
+
+#include "../simple_arm_model.any"
+
+Main = {
+  
+     // Load applied
+     Main.ArmModel.Loads.Dumbbell = {
+     
+     AnyVar load = DesignVar(250);
+     F = {0,-load,0};
+          
+   };      
+     // Movement specifications
+     // Position
+     Main.ArmModel.Drivers.ShoulderMotion.DriverPos = {-1.5};
+     Main.ArmModel.Drivers.ElbowMotion.DriverPos = {1.5};
+     //Velocity
+     Main.ArmModel.Drivers.ShoulderMotion.DriverVel = {0};
+     Main.ArmModel.Drivers.ElbowMotion.DriverVel = {0};
+
+};

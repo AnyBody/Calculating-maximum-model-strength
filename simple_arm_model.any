@@ -1,0 +1,278 @@
+// This is the example model used for the blog post "Calculating maximum model strength" 
+// Details about the setup can be found here: 
+// https://anyscript.org/tools/estimating-maximum-model-strength/
+
+Main = {
+
+  AnyFolder ArmModel = {    
+
+    // Global Reference Frame
+    AnyFixedRefFrame GlobalRef = {
+      AnyRefNode Shoulder = { 
+        sRel = {0,0,0}; 
+      };
+      AnyRefNode DeltodeusA = { 
+        sRel = {0.05,0,0}; 
+      };
+      AnyRefNode DeltodeusB = { 
+        sRel = {-0.05,0,0}; 
+      };
+      AnyRefNode BicepsLong = { 
+        sRel = {0.1,0,0}; 
+      };
+      AnyRefNode TricepsLong = { 
+        sRel = {-0.1,0,0}; 
+      };
+    };  // Global reference frame
+    
+    // Segments
+    AnyFolder Segs = {
+
+      AnySeg UpperArm = {
+        AnyVar Sx = 1.1;
+        AnyVar Sy = 0.9;
+        AnyVar Sz = 1.2;
+        r0 = {0,-0.15,0};
+        Axes0 = {{0,1,0},{-1,0,0},{0,0,1}};
+        Mass = 2.0;
+        Jii = {0.001,0.01,0.01};
+        AnyDrawSeg DrwSeg = {};
+        AnyRefNode ShoulderNode = {
+          sRel = {-0.2*.Sx,0*.Sy,0*.Sz}; 
+        };
+        AnyRefNode ElbowNode = {
+          sRel = {0.2,0,0}; 
+        };
+        AnyRefNode DeltodeusA = { 
+          sRel = {-0.1,0,0.02}; 
+        };
+        AnyRefNode DeltodeusB = { 
+          sRel = {-0.1,0,-0.02}; 
+        };
+        AnyRefNode Brachialis = { 
+          sRel = {0.1,0,0.01}; 
+        };
+        AnyRefNode BicepsShort = { 
+          sRel = {-0.1,0,0.03}; 
+        };
+        AnyRefNode Brachioradialis = { 
+          sRel = {0.05,0,0.02}; 
+        };
+        AnyRefNode TricepsShort = { 
+          sRel = {-0.1,0,-0.01}; 
+        };
+      }; // UpperArm
+
+      AnySeg LowerArm = {
+        r0 = {0.25,-0.3,0};
+        Mass = 2.0;
+        Jii = {0.001,0.01,0.01};
+        AnyRefNode ElbowNode = {
+          sRel = {-0.2,0,0};
+        };
+        AnyRefNode HandNode = {
+          sRel = {0.2,0,0};
+        };
+        AnyRefNode Brachialis = { 
+          sRel = {-0.1,0,0.02}; 
+        };
+        AnyRefNode Brachioradialis = { 
+          sRel = {0.0,0,0.02}; 
+        };
+        AnyRefNode Biceps = { 
+          sRel = {-0.15,0,0.01}; 
+        };
+        AnyRefNode Triceps = { 
+          sRel = {-0.25,0,-0.05}; 
+        };
+        AnyRefNode PalmNode = {
+          sRel = {0.27,0,0};
+          ARel = {{0,0,1},{0,1,0},{-1,0,0}};
+        };
+        AnyDrawSeg DrwSeg = {};
+     }; // LowerArm
+   }; // Segs folder
+
+    AnyFolder Jnts = {
+
+      //---------------------------------
+      AnyRevoluteJoint Shoulder = {
+        Axis = z;
+        AnyRefNode &GroundNode = ..GlobalRef.Shoulder;
+        AnyRefNode &UpperArmNode = ..Segs.UpperArm.ShoulderNode;
+        Constraints.Reaction.Type = {On,On,On,On,On};
+      }; // Shoulder joint
+
+      AnyRevoluteJoint Elbow = {
+        Axis = z;
+        AnyRefNode &UpperArmNode = ..Segs.UpperArm.ElbowNode;
+        AnyRefNode &LowerArmNode = ..Segs.LowerArm.ElbowNode;
+        Constraints.Reaction.Type = {On,On,On,On,On};
+      }; // Elbow joint
+    }; // Jnts folder
+
+    AnyFolder Drivers = {
+
+      //---------------------------------
+      AnyKinEqSimpleDriver ShoulderMotion = {
+        AnyRevoluteJoint &Jnt = ..Jnts.Shoulder;
+        Reaction.Type = {Off};
+      }; // Shoulder driver
+
+      //---------------------------------
+      AnyKinEqSimpleDriver ElbowMotion = {
+        AnyRevoluteJoint &Jnt = ..Jnts.Elbow;
+        Reaction.Type = {Off};
+      }; // Elbow driver
+    }; // Driver folder
+  
+    AnyFolder Muscles = {
+      
+      //---------------------------------
+      AnyViaPointMuscle Brachialis = {
+        AnyMuscleModel Brachialis = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..Segs.UpperArm.Brachialis;
+        AnyRefNode &Ins = ..Segs.LowerArm.Brachialis;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle DeltodeusA = {
+        AnyMuscleModel DeltodeusA = {
+          F0 = 300;
+        };        
+        AnyRefNode &Org = ..GlobalRef.DeltodeusA;
+        AnyRefNode &Ins = ..Segs.UpperArm.DeltodeusA;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle DeltodeusB = {
+       AnyMuscleModel DeltodeusB = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..GlobalRef.DeltodeusB;
+        AnyRefNode &Ins = ..Segs.UpperArm.DeltodeusB;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle Brachioradialis = {
+       AnyMuscleModel Brachioradialis = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..Segs.UpperArm.Brachioradialis;
+        AnyRefNode &Ins = ..Segs.LowerArm.Brachioradialis;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle BicepsShort = {
+        AnyMuscleModel BicepsShort = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..Segs.UpperArm.BicepsShort;
+        AnyRefNode &Ins = ..Segs.LowerArm.Biceps;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle TricepsShort = {
+        AnyMuscleModel TricepsShort = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..Segs.UpperArm.TricepsShort;
+        AnyRefNode &Ins = ..Segs.LowerArm.Triceps;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle BicepsLong = {
+        AnyMuscleModel BicepsLong = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..GlobalRef.BicepsLong;
+        AnyRefNode &Ins = ..Segs.LowerArm.Biceps;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };
+
+      //---------------------------------
+      AnyViaPointMuscle TricepsLong = {
+        AnyMuscleModel TricepsLong = {
+          F0 = 300;
+        };
+        AnyRefNode &Org = ..GlobalRef.TricepsLong;
+        AnyRefNode &Ins = ..Segs.LowerArm.Triceps;
+        AnyDrawMuscle DrwMus = {
+          Bulging = 1;
+        };
+      };    
+    }; // Muscles folder
+
+    AnyFolder Loads = {
+
+      //---------------------------------
+      AnyForce3D Dumbbell = {
+        AnyRefNode &PalmNode = ..Segs.LowerArm.PalmNode;
+        AnyDrawForce drw = {
+          ForceScale = 0.003;
+          AppliedForceColor = {0.3, 0.8, 0.3};
+        };
+      };
+    };  // Loads folder
+
+  }; // ArmModel
+
+  // The study: Operations to be performed on the model
+  AnyBodyStudy ArmStudy = {
+    AnyFolder &Model = .ArmModel;
+    Gravity = {0.0, -9.81, 0.0};
+    nStep = 1;
+  
+    // Changing recruitment criterion type to Min/Max
+    InverseDynamics.Criterion.Type = MR_MinMaxStrict;
+    
+    // Switching upper recruitment bound off allowing muscle activity to exceed 1
+    InverseDynamics.Criterion.UpperBoundOnOff = Off;
+    
+    // Output function used by the parameter study below
+    AnyOutputFun MaxAct = {
+       Val = .MaxMuscleActivity;
+    };
+  };
+  
+  // Parameter study to evaluate the MaxMuscleActivity across a spectrum of loads
+
+  AnyParamStudy  ParameterStudy = 
+  {
+    Analysis = 
+    {
+    AnyOperation &Opr = ..ArmStudy.InverseDynamics;
+    };
+    nStep = {100};
+    AnyDesVar load = {
+      Val = Main.ArmModel.Loads.Dumbbell.load;
+      Min = 0;
+      Max = 250;
+    };
+    AnyDesMeasure maxact = {
+       Val = max(Main.ArmStudy.MaxAct());
+    };  
+  }; // ParameterStudy
+};  // Main

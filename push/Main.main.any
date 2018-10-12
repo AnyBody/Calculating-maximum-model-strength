@@ -1,0 +1,23 @@
+// Model to simulate pushing in x and a force negative in the horizontal direction
+
+#include "../simple_arm_model.any"
+
+Main = {
+  
+     // Load applied
+     Main.ArmModel.Loads.Dumbbell = {
+     
+     AnyVar load = DesignVar(250);
+     F = {-load,0,0};
+          
+     };   
+        
+     // Movement specifications
+     // Position
+     Main.ArmModel.Drivers.ShoulderMotion.DriverPos = {-1.5};
+     Main.ArmModel.Drivers.ElbowMotion.DriverPos = {1.5};
+     //Velocity
+     Main.ArmModel.Drivers.ShoulderMotion.DriverVel = {0};
+     Main.ArmModel.Drivers.ElbowMotion.DriverVel = {0};
+     
+};
